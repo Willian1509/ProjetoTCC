@@ -77,37 +77,27 @@ export default {
     };
   },
   methods: {
-    async login() {
-      this.loading = true; // Inicia o carregamento
-      const loginData = {
-        Email: this.email,
-        Senha: this.senha,
-      };
+async login() {
+  this.loading = true;
 
-      try {
-        const response = await axios.post('/api/login', loginData);
+  try {
+    const response = await axios.post('http://localhost:3000/api/login', {
+      Email: this.email,
+      Senha: this.senha
+    });
 
-        // Verifica se a resposta contém a mensagem de sucesso
-        if (response.data.message === 'Login bem-sucedido!') {
-          this.$router.push('/pesquisa');
-        } else {
-          this.errorMessage = response.data.message || 'Erro desconhecido no login.';
-        }
-      } catch (error) {
-        if (error.response) {
-          // O servidor retornou um código de erro
-          this.errorMessage = `Erro: ${error.response.data.message || 'Falha na autenticação.'}`;
-        } else if (error.request) {
-          // A requisição foi feita, mas não houve resposta
-          this.errorMessage = 'Erro de comunicação com o servidor. Tente novamente.';
-        } else {
-          // Algo deu errado na configuração da requisição
-          this.errorMessage = `Erro ao configurar a requisição: ${error.message}`;
-        }
-      } finally {
-        this.loading = false; // Finaliza o carregamento
-      }
-    },
+    if (response.data.message === 'Login bem-sucedido!') {
+      this.$router.push('/pesquisa');
+    } else {
+      this.errorMessage = response.data.message;
+    }
+
+  } catch (error) {
+    this.errorMessage = error.response?.data?.message || 'Erro ao conectar com a API';
+  } finally {
+    this.loading = false;
+  }
+},
     irParaCadastro() {
       this.$router.push('/cadastro');
     },

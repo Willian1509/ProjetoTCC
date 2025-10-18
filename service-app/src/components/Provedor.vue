@@ -3,8 +3,12 @@
     <v-row align="center" justify="center" class="fill-height">
       <v-col cols="12" sm="8" md="6">
         <v-card class="pa-5 cadastro-card" elevation="10">
-          <v-card-title class="text-h5 font-weight-bold text-center">Tipo de Usuário</v-card-title>
-          <v-card-subtitle class="text-center mb-3">Selecione se você é um cliente ou provedor</v-card-subtitle>
+          <v-card-title class="text-h5 font-weight-bold text-center">
+            Tipo de Usuário
+          </v-card-title>
+          <v-card-subtitle class="text-center mb-3">
+            Selecione se você é um cliente ou provedor
+          </v-card-subtitle>
 
           <v-card-text>
             <v-form ref="form" v-model="valid">
@@ -33,7 +37,9 @@
           </v-card-text>
 
           <v-card-actions class="d-flex flex-column justify-center">
-            <v-btn color="primary" class="mb-2" @click="cadastrar" :disabled="!valid">Cadastrar</v-btn>
+            <v-btn color="primary" class="mb-2" @click="cadastrar">
+              Cadastrar
+            </v-btn>
           </v-card-actions>
         </v-card>
       </v-col>
@@ -42,6 +48,8 @@
 </template>
 
 <script>
+import axios from 'axios';
+
 export default {
   name: 'Provedor',
   data() {
@@ -55,40 +63,50 @@ export default {
           if (this.tipoUsuario === 'Provedor') {
             return value.length > 0 || 'Selecione pelo menos um serviço.';
           }
-          return true; // Não precisa validar se o tipo de usuário for Cliente
+          return true;
         },
       },
     };
   },
   methods: {
     async cadastrar() {
-      if (this.$refs.form.validate()) {
-        try {
-          const dadosCadastro = {
-            nome: this.$route.query.nome,
-            email: this.$route.query.email,
-            telefone: this.$route.query.telefone,
-            senha: this.$route.query.senha,
-            cidade: this.$route.query.cidade,
-            estado: this.$route.query.estado,
-            tipoUsuario: this.tipoUsuario,
-            servico: this.tipoUsuario === 'Provedor' ? JSON.stringify(this.servicosSelecionados) : null,
-          };
+      // Validar formulário
+      const formValido = this.$refs.form.validate();
+      console.log('Formulário válido?', formValido);
 
-          const response = await fetch('https://a7raw27fk2joikwvbwrlzm7uxa0epmnt.lambda-url.sa-east-1.on.aws/', {
-            method: 'POST',
-            body: JSON.stringify(dadosCadastro),
-            headers: { 'Content-Type': 'application/json' },
-          });
+      if (!formValido) {
+        console.warn('Formulário inválido');
+        return;
+      }
 
-          if (response.ok) {
-            this.$router.push('/pesquisa');
-          } else {
-            console.error('Erro ao cadastrar:', response);
-          }
-        } catch (error) {
-          console.error('Erro ao cadastrar:', error);
+      try {
+        const dadosCadastro = {
+          nome: this.$route.query.nome,
+          email: this.$route.query.email,
+          telefone: this.$route.query.telefone,
+          senha: this.$route.query.senha,
+          cidade: this.$route.query.cidade,
+          estado: this.$route.query.estado,
+          tipoUsuario: this.tipoUsuario,
+          servicos: this.tipoUsuario === 'Provedor' ? this.servicosSelecionados : [],
+        };
+
+        console.log('Enviando dados para API:', dadosCadastro);
+
+        // Chamada para a API Node.js
+        const response = await axios.post('http://localhost:3000/api/cadastro', dadosCadastro);
+
+        console.log('Resposta da API:', response.data);
+
+        if (response.data.message === 'Cadastro realizado com sucesso!') {
+          this.$router.push('/pesquisa'); // Redireciona para tela de pesquisa
+        } else {
+          console.error('Erro ao cadastrar:', response.data);
         }
+
+      } catch (error) {
+        console.error('Erro ao cadastrar:', error);
+        alert('Erro ao cadastrar. Verifique o console.');
       }
     },
   },
@@ -107,13 +125,13 @@ export default {
 }
 
 .cadastro-card {
-  background-color: rgba(255, 255, 255, 0.85); /* Leve transparência no card */
+  background-color: rgba(255, 255, 255, 0.85);
   border-radius: 16px;
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2); /* Sombra para o card */
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
 }
 
 .v-card-title {
-  color: #1976d2; /* Azul escuro */
+  color: #1976d2;
 }
 
 .mb-4 {

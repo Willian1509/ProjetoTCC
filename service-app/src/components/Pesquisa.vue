@@ -58,19 +58,24 @@ export default {
   },
 methods: {
     async filtrarProvedores() {
-        if (this.servico.length > 1) {
-            try {
-                const response = await axios.post('https://<sua-url-lambda>', {
-                    servico: this.servico,
-                });
-                this.provedores = response.data.provedores; // Atualizar os provedores conforme digita
-            } catch (error) {
-                console.error('Erro ao buscar provedores:', error);
-            }
-        } else {
-            this.provedores = []; // Limpar os resultados se o input for muito curto
-        }
-    },
+  if (this.servico.length > 1) {
+    try {
+      const response = await axios.post('http://localhost:3000/api/pesquisa', {
+        servico: this.servico
+      });
+
+      this.provedores = response.data.provedores.map(provedor => ({
+        ...provedor,
+        servicos: provedor.servico ? provedor.servico.split(',') : []
+      }));
+
+    } catch (error) {
+      console.error('Erro ao buscar provedores:', error);
+    }
+  } else {
+    this.provedores = [];
+  }
+},
     formatarServicos(servicos) {
         return servicos.join(', '); // Formatar o array de serviços como uma string separada por vírgulas
     }
